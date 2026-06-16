@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/platform-Android%20API%2021%2B-blue" />
   <img src="https://img.shields.io/badge/kotlin-1.9-purple" />
-  <img src="https://img.shields.io/badge/version-0.1.0-green" />
+  <img src="https://img.shields.io/badge/version-0.2.0-green" />
   <img src="https://img.shields.io/badge/license-Proprietary-red" />
 </p>
 
@@ -43,7 +43,7 @@ allprojects {
 ```gradle
 // app/build.gradle
 dependencies {
-    implementation 'com.puerix:puerix-sdk:0.1.0'
+    implementation 'com.puerix:puerix-sdk:0.2.0'
 }
 ```
 
@@ -117,35 +117,35 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-### 3. Apenas liveness (sem API)
+---
 
-Se quiser usar só a detecção facial sem integração com a API:
+## Customização visual
+
+As telas nativas usam a **paleta Puerix por padrão**. Para adequá-las à identidade visual do seu app, defina `PuerixTheme.active` **antes** do `initialize`. Use `PuerixTheme.DEFAULT` para reaproveitar as cores que não quiser sobrescrever:
 
 ```kotlin
-companion object {
-    private const val RC_LIVENESS = 5678
-}
-
-// Iniciar
-PuerixSDK.startLiveness(
-    activity = this,
-    requestCode = RC_LIVENESS,
+PuerixTheme.active = PuerixTheme(
+    primary = Color.parseColor("#6750A4"),      // ações primárias
+    accent = Color.parseColor("#9A82DB"),       // destaque / "detectando"
+    success = Color.parseColor("#2E7D32"),      // sucesso / step OK
+    text = PuerixTheme.DEFAULT.text,            // mantém o padrão Puerix
+    background = PuerixTheme.DEFAULT.background, // mantém o padrão Puerix
 )
 
-// Receber resultado
-override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    super.onActivityResult(requestCode, resultCode, data)
-    PuerixSDK.handleLivenessResult(
-        requestCode, resultCode, data,
-        myRequestCode = RC_LIVENESS
-    ) { result ->
-        if (result.isComplete) {
-            Log.d("Puerix", "Capturas: ${result.captureData.keys}")
-            // result.captureData["lookAtCamera"] → ByteArray (JPEG)
-        }
-    }
-}
+PuerixSDK.initialize(PuerixConfig(apiKey = "SUA_API_KEY"))
 ```
+
+### Tokens de cor
+
+| Token | Default Puerix | Onde aparece |
+|-------|----------------|--------------|
+| `primary` | `#2C7DA0` | Ações primárias, captura de documento |
+| `accent` | `#61C0BF` | Borda "detectando", destaques |
+| `success` | `#468C8B` | Borda OK, steps concluídos, textos de sucesso |
+| `text` | `#1A3B5D` | Labels escuros sobre fundo claro |
+| `background` | `#F4F7F6` | Fundos claros |
+
+> Sem definir `PuerixTheme.active`, as telas mantêm o visual Puerix padrão.
 
 ---
 
@@ -190,14 +190,6 @@ fun startVerification(
 | `LOOK_AT_CAMERA` | `lookAtCamera` | Olhar para a câmera |
 | `TURN_HEAD_LEFT` | `turnHeadLeft` | Virar a cabeça para a esquerda |
 | `TURN_HEAD_RIGHT` | `turnHeadRight` | Virar a cabeça para a direita |
-
-### PuerixLivenessResult
-
-| Propriedade | Tipo | Descrição |
-|-------------|------|-----------|
-| `isComplete` | `Boolean` | Se completou todos os passos |
-| `isApproved` | `Boolean` | Se o backend aprovou |
-| `captureData` | `Map<String, ByteArray>` | JPEG data por step key |
 
 ---
 
@@ -255,6 +247,12 @@ A permissão de câmera é solicitada em runtime automaticamente pelo SDK.
 ---
 
 ## Changelog
+
+> As versões 0.1.x foram retiradas de distribuição por motivos de segurança. Use sempre 0.2.0+.
+
+### 0.2.0
+- **Removida a API pública de liveness standalone** (`startLiveness`) — a verificação facial roda apenas dentro do fluxo de verificação; o app integrador não recebe mais as fotos do usuário. Use `startVerification`.
+- **Tema personalizável** via `PuerixTheme` — cores das telas nativas adequáveis à identidade visual do app (paleta Puerix como padrão)
 
 ### 0.1.0
 - Liveness detection (3 steps: olhar, virar esquerda, virar direita)
